@@ -4,6 +4,7 @@ width = 80;
 wall_thickness = 0.8;
 base_height = 3;
 corner_radius = 5;
+bottom_diameter = 10;
 
 // Main vase body
 difference() {
@@ -16,4 +17,7 @@ difference() {
       offset(r = corner_radius - wall_thickness)
           square([ width - 2 * wall_thickness, width - 2 * wall_thickness ],
                  center = true);
+
+  translate([ 0, 0, -base_height ]) linear_extrude(height = height)
+      circle(d = bottom_diameter);
 }
