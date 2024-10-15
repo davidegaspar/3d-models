@@ -1,10 +1,10 @@
 // Vase parameters
-height = 45;
-width = 85;
+height = 50;
+width = 75;
 wall_thickness = 0.4;
 base_height = 3;
 corner_radius = 5;
-bottom_diameter = 30;
+bottom_diameter = 50;
 
 // Main vase body
 difference() {
