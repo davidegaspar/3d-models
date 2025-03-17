@@ -9,24 +9,17 @@ module door() {
   }
 }
 
-module hook1() {
-  translate([ -5, 0, 0 ]) square([ 5, 20 ], center = false);
-  translate([ 0, 15, 0 ]) square([ 25, 5 ], center = false);
-  translate([ 20, -20, 0 ]) square([ 5, 40 ], center = false);
-}
-
-module hook2(width = 20, margin = .1) {
+module hook(width = 20, margin = .1) {
+  loopRound = 10;
   points = [
     [ 0 - margin, 0, 1 ], [ 0 - margin, 15 + margin, 0 ],
-    [ 20 + margin, 15 + margin, 0 ], [ 20 + margin, -30, 10 ], [ 30, -40, 10 ],
-    [ 40, -30, 10 ], [ 40, -20, 5 ]
+    [ 20 + margin, 15 + margin, 0 ], [ 20 + margin, -30, loopRound ],
+    [ 35, -40, loopRound ], [ 50, -30, loopRound ], [ 50, -20, 5 ]
   ];
-  // polygon(polyRound(points, 10));
 
-  linear_extrude(height = width)
-      polygon(polyRound(beamChain(points, offset1 = -5, offset2 = 0), 20));
+  extrudeWithRadius(width, 2, 2, 20)
+      polygon(polyRound(beamChain(points, offset1 = 5, offset2 = 0), 20));
 }
 
-#color("yellow") door();
-// color("orange") hook1();
-color("orange") hook2();
+// #color("yellow") door();
+color("orange") hook();
