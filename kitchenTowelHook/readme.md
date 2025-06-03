@@ -1,6 +1,6 @@
 # Kitchen towel hook
 
-A sturdy kitchen towel hook, as most I found online broke after some time.
+A sturdy kitchen towel hook, as most I found online broke after a few weeks of use.
 
 ## Reference
 
