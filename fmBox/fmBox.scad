@@ -33,6 +33,18 @@ buttonSpacing = 9.75;
 buttonStartY = 5; // 2 + 3 offset
 buttonClearance = 0.1;
 
+// Additional positioning constants
+buttonMountingOffset = 2;
+buttonMountingZOffset = 1;
+topLayerButtonClearance = 6.5;
+numberOfButtons = 5;
+
+// Wall height calculation constants
+screenClearanceHeight = 4;
+buttonsBlockClearanceHeight = 4;
+additionalClearanceHeight = 4;
+wallHeightReduction = 2;
+
 // Box construction constants
 wallThickness = 2;
 layerThicknessBottom = 2;
@@ -86,8 +98,8 @@ module button() {
 }
 
 module buttons() {
-  for (i = [0:4]) {
-    translate([buttonsOffsetX + 2, buttonStartY + i * buttonSpacing, 1])
+  for (i = [0:numberOfButtons-1]) {
+    translate([buttonsOffsetX + buttonMountingOffset, buttonStartY + i * buttonSpacing, buttonMountingZOffset])
       button();
   }
 }
@@ -143,7 +155,7 @@ module top() {
     union() {
       // Bottom layer (PCB size, reduced for button clearance)
       color("darkgray", 0.6)
-        cube([pcbWidth - 6.5, pcbLength, layerThicknessTop]);
+        cube([pcbWidth - topLayerButtonClearance, pcbLength, layerThicknessTop]);
 
       // Top layer (2mm bigger each side)
       translate([-boxClearanceXY, -boxClearanceXY, layerThicknessTop])
@@ -175,8 +187,8 @@ module top() {
       }
 
     // Cut outs for button disks with clearance
-    for (i = [0:4]) {
-      translate([buttonsOffsetX + 2, buttonStartY + i * buttonSpacing, -1])
+    for (i = [0:numberOfButtons-1]) {
+      translate([buttonsOffsetX + buttonMountingOffset, buttonStartY + i * buttonSpacing, -1])
         cylinder(h=4, d=buttonStemDiameter + 2 * buttonClearance);
     }
   }
@@ -184,16 +196,15 @@ module top() {
 
 // Walls
 module walls() {
-  wall_thickness = 2;
-  total_height = componentLayerHeight + pcbHeight + 4 + 4 + 4 - 2; // Reduced by 2mm total (1mm up + 1mm down)
+  total_height = componentLayerHeight + pcbHeight + screenClearanceHeight + buttonsBlockClearanceHeight + additionalClearanceHeight - wallHeightReduction;
 
   color("brown", 0.7) {
     difference() {
       // Outer shell
-      cube([pcbWidth + 2 * wall_thickness, pcbLength + 2 * wall_thickness, total_height]);
+      cube([pcbWidth + 2 * wallThickness, pcbLength + 2 * wallThickness, total_height]);
 
       // Inner cavity (PCB size)
-      translate([wall_thickness, wall_thickness, -1])
+      translate([wallThickness, wallThickness, -1])
         cube([pcbWidth, pcbLength, total_height + 2]);
     }
   }
