@@ -27,7 +27,7 @@ buttonsOffsetY = 2;
 buttonBaseDiameter = 6;
 buttonBaseHeight = 2;
 buttonStemDiameter = 4;
-buttonStemHeight = 3;
+buttonStemHeight = 2;
 buttonTopDiameter = 4;
 buttonSpacing = 9.75;
 buttonStartY = 5; // 2 + 3 offset
@@ -47,9 +47,9 @@ wallHeightReduction = 2;
 
 // Box construction constants
 wallThickness = 2;
-layerThicknessBottom = 2;
+layerThicknessBottom = 1;
 layerThicknessTop = 1;
-bottomLayerOffset = -3;
+bottomLayerOffset = -2;
 topLayerOffset = -1;
 boxClearanceXY = 2; // 2mm bigger each side
 textDepth = 2;
@@ -63,7 +63,7 @@ pillarOffsetFromEdge = 2;
 
 // Circuit board model (for reference)
 module circuit_board() {
-  color("green", 0.8)
+  color("green", 0.7)
     cube([pcbWidth, pcbLength, pcbHeight]);
 }
 
@@ -84,61 +84,111 @@ module buttonsBlock() {
     cube([buttonsBlockWidth, buttonsBlockLength, buttonsBlockHeight]);
 }
 
-module button() {
-  color("red", 0.7) {
-    // Base disk
-    cylinder(h=buttonBaseHeight, d=buttonBaseDiameter);
-    // Top cylinder with rounded top
-    translate([0, 0, buttonBaseHeight]) {
-      cylinder(h=buttonStemHeight, d=buttonStemDiameter);
-      translate([0, 0, buttonStemHeight])
-        sphere(d=buttonTopDiameter);
+module buttonWithPlus() {
+  difference() {
+    buttonBase();
+    // Cut + symbol on top
+    translate([0, 0, 1 + buttonStemHeight - 0.4]) {
+      // Horizontal bar
+      translate([-1.5, -0.25, 0])
+        cube([3, 0.5, 1]);
+      // Vertical bar
+      translate([-0.25, -1.5, 0])
+        cube([0.5, 3, 1]);
     }
   }
 }
 
+module buttonWithMinus() {
+  difference() {
+    buttonBase();
+    // Cut - symbol on top (rotated 90 degrees)
+    translate([0, 0, 1 + buttonStemHeight - 0.4]) {
+      // Vertical bar
+      translate([-0.25, -1.5, 0])
+        cube([0.5, 3, 1]);
+    }
+  }
+}
+
+module buttonWithPause() {
+  difference() {
+    buttonBase();
+    // Cut pause symbol on top (two horizontal bars)
+    translate([0, 0, 1 + buttonStemHeight - 0.4]) {
+      // Top bar
+      translate([-1.5, -1, 0])
+        cube([3, 0.5, 1]);
+      // Bottom bar
+      translate([-1.5, 0.5, 0])
+        cube([3, 0.5, 1]);
+    }
+  }
+}
+
+module buttonBase() {
+  // Base cube
+  translate([-buttonBaseDiameter / 2 - 1, -buttonBaseDiameter / 2 - 1, 0])
+    cube([buttonBaseDiameter + 1, buttonBaseDiameter + 2, 1]);
+  // Top cylinder
+  translate([0, 0, 1]) {
+    cylinder(h=buttonStemHeight, d=6);
+  }
+}
+
 module buttons() {
-  for (i = [0:numberOfButtons-1]) {
-    translate([buttonsOffsetX + buttonMountingOffset, buttonStartY + i * buttonSpacing, buttonMountingZOffset])
-      button();
+  for (i = [0:numberOfButtons - 1]) {
+    translate([buttonsOffsetX + buttonMountingOffset, buttonStartY + i * buttonSpacing, buttonMountingZOffset]) if (i == 0) {
+      color("white") buttonWithMinus();
+    } else if (i == 1) {
+      color("white") buttonWithPlus();
+    } else if (i == 2) {
+      color("gray") buttonWithMinus();
+    } else if (i == 3) {
+      color("gray") buttonWithPlus();
+    } else if (i == 4) {
+      color("orange") buttonWithPause();
+    }
   }
 }
 
 module bottom() {
   difference() {
     union() {
-      // Bottom layer (2mm bigger each side)
-      translate([-boxClearanceXY, -boxClearanceXY, bottomLayerOffset])
-        color("lightgray", 0.6)
+      // Bottom layer
+      color("#333333", 0.9) translate([-boxClearanceXY, -boxClearanceXY, bottomLayerOffset])
           cube([pcbWidth + 2 * boxClearanceXY, pcbLength + 2 * boxClearanceXY, layerThicknessBottom]);
 
-      // Top layer (PCB size)
-      translate([0, 0, topLayerOffset])
-        color("darkgray", 0.6)
+      // Top layer
+      color("orange") translate([0, 0, topLayerOffset])
           cube([pcbWidth, pcbLength, layerThicknessTop]);
 
-      // Cylindrical pillars (3 on edges of top layer)
-      color("yellow", 0.8) {
+      // Cubic pillars (3 on edges of top layer)
+      color("orange") {
         // Pillar 1 - front right corner
-        translate([pcbWidth - pillarOffsetFromEdge, pillarOffsetFromEdge, 0])
-          cylinder(h=pillarHeightStandard, d=pillarDiameter);
+        translate([pcbWidth - 6, pillarOffsetFromEdge - pillarDiameter / 2, 0])
+          cube([6, pillarDiameter, pillarHeightStandard]);
 
         // Pillar 2 - back left corner  
-        translate([pillarOffsetFromEdge, pcbLength - pillarOffsetFromEdge, 0])
-          cylinder(h=pillarHeightStandard, d=pillarDiameter);
+        translate([pillarOffsetFromEdge - pillarDiameter / 2, pcbLength - pillarOffsetFromEdge - pillarDiameter / 2, 0])
+          cube([pillarDiameter, pillarDiameter, pillarHeightStandard]);
 
         // Pillar 3 - back right corner
-        translate([pcbWidth - pillarOffsetFromEdge, pcbLength - pillarOffsetFromEdge, 0])
-          cylinder(h=pillarHeightStandard, d=pillarDiameter);
+        translate([pcbWidth - pillarOffsetFromEdge - pillarDiameter / 2, pcbLength - pillarOffsetFromEdge - pillarDiameter / 2, 0])
+          cube([pillarDiameter, pillarDiameter, pillarHeightStandard]);
 
         // Pillar 4 - front left corner (shorter)
-        translate([2 * pillarOffsetFromEdge, pillarOffsetFromEdge, 0])
-          cylinder(h=pillarHeightShort, d=pillarDiameter);
+        translate([0, pillarOffsetFromEdge - pillarDiameter / 2, 0])
+          cube([9, 5, pillarHeightShort]);
+
+        // Pillar 5 - front right side, adjacent to pillar 1
+        translate([pcbWidth - 12, pillarOffsetFromEdge - pillarDiameter / 2, 0])
+          cube([6, 15, 1]);
       }
     }
 
     // Text cutout "FANTAS" and "FM" on bottom layer (centered in bottom layer)
-    translate([(pcbWidth + 2 * boxClearanceXY) / 2 - boxClearanceXY - 1, (pcbLength + 2 * boxClearanceXY) / 2 - boxClearanceXY, bottomLayerOffset])
+    translate([(pcbWidth + 2 * boxClearanceXY) / 2 - boxClearanceXY - 1, (pcbLength + 2 * boxClearanceXY) / 2 - boxClearanceXY, bottomLayerOffset - 1])
       rotate([0, 0, 90])
         mirror([1, 0, 0])
           linear_extrude(height=textDepth) {
@@ -153,60 +203,53 @@ module bottom() {
 module top() {
   difference() {
     union() {
-      // Bottom layer (PCB size, reduced for button clearance)
-      color("darkgray", 0.6)
-        cube([pcbWidth - topLayerButtonClearance, pcbLength, layerThicknessTop]);
-
       // Top layer (2mm bigger each side)
-      translate([-boxClearanceXY, -boxClearanceXY, layerThicknessTop])
-        color("lightgray", 0.6)
-          cube([pcbWidth + 2 * boxClearanceXY, pcbLength + 2 * boxClearanceXY, layerThicknessBottom]);
+      translate([-boxClearanceXY, -boxClearanceXY, 0])
+        cube([pcbWidth + 2 * boxClearanceXY, pcbLength + 2 * boxClearanceXY, layerThicknessBottom]);
 
-      // Cylindrical pillars (2 on left side)
+      // Cubic pillars (2 on left side)
       color("yellow", 0.8) {
         // Pillar 1 - front left corner
-        translate([pillarOffsetFromEdge, pillarOffsetFromEdge, -pillarDiameter])
-          cylinder(h=pillarDiameter, d=pillarDiameter);
+        translate([pillarOffsetFromEdge - pillarDiameter / 2, pillarOffsetFromEdge - pillarDiameter / 2, -pillarDiameter])
+          cube([pillarDiameter, pillarDiameter, pillarDiameter]);
 
         // Pillar 2 - back left corner  
-        translate([pillarOffsetFromEdge, pcbLength - pillarOffsetFromEdge, -pillarDiameter])
-          cylinder(h=pillarDiameter, d=pillarDiameter);
+        translate([pillarOffsetFromEdge - pillarDiameter / 2, pcbLength - pillarOffsetFromEdge - pillarDiameter / 2, -pillarDiameter])
+          cube([pillarDiameter, pillarDiameter, pillarDiameter]);
       }
     }
 
-    // Cut opening for screen - tapered
-    translate([screenOffsetX + screenWidth / 2, screenOffsetY + screenLength / 2, -1])
-      hull() {
-        // Bottom opening (screen size)
-        translate([-screenWidth / 2, -screenLength / 2, 1])
-          cube([screenWidth, screenLength, 0.1]);
-
-        // Top opening (wider) - extends to top layer
-        translate([-(screenWidth + 2 * boxClearanceXY) / 2, -(screenLength + 2 * boxClearanceXY) / 2, 4])
-          cube([screenWidth + 2 * boxClearanceXY, screenLength + 2 * boxClearanceXY, 0.1]);
-      }
+    // Cut opening for screen
+    translate([screenOffsetX, screenOffsetY, -1])
+      cube([screenWidth, screenLength, layerThicknessBottom + 2]);
 
     // Cut outs for button disks with clearance
-    for (i = [0:numberOfButtons-1]) {
+    for (i = [0:numberOfButtons - 1]) {
       translate([buttonsOffsetX + buttonMountingOffset, buttonStartY + i * buttonSpacing, -1])
-        cylinder(h=4, d=buttonStemDiameter + 2 * buttonClearance);
+        cylinder(h=4, d=6 + 2 * buttonClearance);
     }
   }
 }
 
 // Walls
 module walls() {
-  total_height = componentLayerHeight + pcbHeight + screenClearanceHeight + buttonsBlockClearanceHeight + additionalClearanceHeight - wallHeightReduction;
+  total_height = componentLayerHeight + pcbHeight + screenClearanceHeight + buttonsBlockClearanceHeight + additionalClearanceHeight - wallHeightReduction - 1;
 
-  color("brown", 0.7) {
-    difference() {
-      // Outer shell
-      cube([pcbWidth + 2 * wallThickness, pcbLength + 2 * wallThickness, total_height]);
+  difference() {
+    // Outer shell
+    cube([pcbWidth + 2 * wallThickness, pcbLength + 2 * wallThickness, total_height]);
 
-      // Inner cavity (PCB size)
-      translate([wallThickness, wallThickness, -1])
-        cube([pcbWidth, pcbLength, total_height + 2]);
-    }
+    // Inner cavity (PCB size)
+    translate([wallThickness, wallThickness, -1])
+      cube([pcbWidth, pcbLength, total_height + 2]);
+
+    // Cut for peripherals box in -y facing wall
+    translate([wallThickness, -1, wallThickness - 2])
+      cube([peripheralsWidth, wallThickness + 2, peripheralsHeight + 1]);
+
+    // Cut in +y facing wall (middle bottom)
+    translate([(pcbWidth + 2 * wallThickness) / 2 - 1.25, pcbLength + wallThickness - 1, wallThickness - 2])
+      cube([2.5, wallThickness + 2, 3.5]);
   }
 }
 
@@ -226,16 +269,19 @@ module circuit() {
 }
 
 module full_assembly() {
-  translate([0, 0, componentLayerHeight - peripheralsHeight])
-    bottom();
 
   circuit();
 
-  translate([0, 0, componentLayerHeight + pcbHeight + screenHeight])
-    top();
+  translate([0, 0, componentLayerHeight - peripheralsHeight])
+    bottom();
 
-  translate([-boxClearanceXY, -boxClearanceXY, componentLayerHeight - peripheralsHeight - wallThickness + 1])
-    walls();
+  color("#333333", 0.9)
+    translate([-boxClearanceXY, -boxClearanceXY, componentLayerHeight - peripheralsHeight - wallThickness + 1])
+      walls();
+
+  color("#333333", 0.9)
+    translate([0, 0, componentLayerHeight + pcbHeight + screenHeight])
+      top();
 
   translate([0, 0, componentLayerHeight + pcbHeight + buttonBaseHeight])
     buttons();
@@ -249,7 +295,11 @@ module full_assembly() {
 // bottom();
 // top();
 // walls();
-// button();
+
+// Print individual buttons:
+// buttonWithMinus();
+// buttonWithPlus();
+// buttonWithPause();
 
 // View circuit only:
 //circuit();
