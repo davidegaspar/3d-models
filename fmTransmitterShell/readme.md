@@ -1,6 +1,6 @@
 # FM Transmitter Shell
 
-A shell for _Walfront DSP & PLL Digital Wireless Microphone Stereo FM Transmitter Module 87-108MHz_.
+A shell for Walfront DSP & PLL Digital Wireless Microphone Stereo FM Transmitter Module 87-108MHz.
 
 ## Description
 
